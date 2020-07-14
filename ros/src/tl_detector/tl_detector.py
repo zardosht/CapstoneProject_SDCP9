@@ -118,21 +118,6 @@ class TLDetector(object):
             return 0
 
         closest_idx = self.waypoint_tree.query([x, y], 1)[1]
-        # Check if closest is ahead or behind vehicle
-        # closest_coord = self.waypoints_2d[closest_idx]
-        # prev_coord = self.waypoints_2d[closest_idx - 1]
-
-        # # Equation for hyperplane through closest_coords
-        # cl_vect = np.array(closest_coord)
-        # prev_vect = np.array(prev_coord)
-        # pos_vect = np.array([x, y])
-
-        # val = np.dot(cl_vect - prev_vect, pos_vect - cl_vect)
-
-        # if val > 0:
-        #     closest_idx = (closest_idx + 1) % len(self.waypoints_2d)
-
-        # rospy.loginfo("tl_detector: closest_idx: %s", closest_idx)
         return closest_idx
 
     def get_light_state(self, light):
@@ -145,18 +130,17 @@ class TLDetector(object):
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
 
         """
-
         # For testing, just return the light state
-        return light.state
+        # return light.state
 
-        # if(not self.has_image):
-        #     self.prev_light_loc = None
-        #     return False
+        if(not self.has_image):
+            self.prev_light_loc = None
+            return False
 
-        # cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
 
-        # #Get classification
-        # return self.light_classifier.get_classification(cv_image)
+        #Get classification
+        return self.light_classifier.get_classification(cv_image)
 
     def process_traffic_lights(self):
         """Finds closest visible traffic light, if one exists, and determines its
