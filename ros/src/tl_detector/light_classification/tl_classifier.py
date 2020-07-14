@@ -10,6 +10,9 @@ import cv2
 class TLClassifier(object):
     def __init__(self):
         self.light_state = TrafficLight.UNKNOWN
+        self.last_light_state = TrafficLight.UNKNOWN
+        self.prediction_rate = 5
+        self.prediction_counter = -1
         self.model_loaded = False
 
         curr_dir = os.path.dirname(os.path.realpath(__file__))
@@ -53,6 +56,11 @@ class TLClassifier(object):
         Returns:
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
         """
+        # predict only every fifth frame
+        self.prediction_counter += 1
+        if self.prediction_counter % self.prediction_rate != 0:
+            return self.last_light_state
+
         self.light_state = TrafficLight.UNKNOWN
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image_expanded = np.expand_dims(image, axis=0)
@@ -69,7 +77,7 @@ class TLClassifier(object):
         min_score_thresh = .5
         for i in range(boxes.shape[0]):
             if scores is None or scores[i] > min_score_thresh:
-                rospy.loginfo("TLClassifier: classes:{}".format(classes))
+                # rospy.loginfo("TLClassifier: classes:{}".format(classes))
                 class_name = self.category_index[classes[i]]['name']
                 if class_name == 'Red':
                     self.light_state = TrafficLight.RED
@@ -82,5 +90,5 @@ class TLClassifier(object):
             class_name = 'UNKNOWN'
 
         rospy.loginfo("Traffic light detected: class_name:{}".format(class_name))
-
+        self.last_light_state = self.light_state
         return self.light_state
